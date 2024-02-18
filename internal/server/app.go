@@ -3,6 +3,7 @@ package server
 import (
 	"database/sql"
 	"example.com/go-rest-api/internal/handlers/registration_handlers"
+	"example.com/go-rest-api/internal/handlers/student_handlers"
 	"fmt"
 	"log"
 	"os"
@@ -19,6 +20,7 @@ func Start() {
 	db := getDB()
 	router := gin.Default()
 	router.POST("/api/register", registration_handlers.RegisterStudentsHandler(db))
+	router.GET("/api/commonstudents", student_handlers.GetCommonStudentsHandler(db))
 	router.Run()
 }
 
