@@ -5,7 +5,9 @@ go 1.21.6
 require github.com/lib/pq v1.10.9
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/lpernett/godotenv v0.0.0-20230527005122-0de1d4c5ef5e
 )
 
@@ -34,6 +36,6 @@ require (
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
-	gopkg.in/validator.v2 v2.0.1 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
