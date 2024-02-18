@@ -21,6 +21,7 @@ func Start() {
 	router := gin.Default()
 	router.POST("/api/register", registration_handlers.RegisterStudentsHandler(db))
 	router.GET("/api/commonstudents", student_handlers.GetCommonStudentsHandler(db))
+	router.POST("/api/suspend", student_handlers.SuspendStudentHandler(db))
 	router.Run()
 }
 
