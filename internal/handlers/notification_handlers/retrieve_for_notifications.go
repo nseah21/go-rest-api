@@ -21,6 +21,7 @@ const (
 		INSERT INTO Notifications (sender_id, recipient_id, notification) 
 		VALUES ($1, $2, $3);
 	`
+	RETRIEVE_NOTIFICATIONS_BAD_REQUEST_ERROR_MESSAGE = `Please ensure that your request body has the following format: { 'teacher': <string>, 'notification': <string> }`
 )
 
 func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
@@ -30,12 +31,14 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 		select_stmt, err := db.Prepare(SELECT_NOTIFIABLE_STUDENTS)
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
+			return 
 		}
 
 		var notificationRequest models.NotificationRequest
 
 		if err := c.BindJSON(&notificationRequest); err != nil {
-			utils.AbortWithBadRequestError(c, "Please ensure that your request body has the following format: { 'teacher': <string>, 'notification': <string> }")
+			utils.AbortWithBadRequestError(c, RETRIEVE_NOTIFICATIONS_BAD_REQUEST_ERROR_MESSAGE)
+			return
 		}
 
 		notification_sender := notificationRequest.Teacher
@@ -48,6 +51,7 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 		rows, err := select_stmt.Query(notification_sender)
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
+			return
 		}
 		defer rows.Close()
 
@@ -55,6 +59,7 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 			var student models.Student
 			if err := rows.Scan(&student.Id); err != nil {
 				utils.AbortWithInternalServerError(c, err.Error())
+				return 
 			}
 			notifiableStudents = append(notifiableStudents, student.Id)
 		}
@@ -64,12 +69,14 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 		insert_stmt, err := db.Prepare(INSERT_INTO_NOTIFICATIONS)
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
+			return
 		}
 
 		for _, student := range notifiableStudents {
 			_, err := insert_stmt.Exec(notification_sender, student, notification_text)
 			if err != nil {
 				utils.AbortWithInternalServerError(c, err.Error())
+				return 
 			}
 		}
 

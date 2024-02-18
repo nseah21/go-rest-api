@@ -1,9 +1,9 @@
 package models
 
 type Student struct {
-	Id string `json:"id"`
+	Id string `json:"id" binding:"required"`
 }
 
 type SuspensionRequest struct {
-	Student string `json:"student"`
+	Student string `json:"student" binding:"required"`
 }

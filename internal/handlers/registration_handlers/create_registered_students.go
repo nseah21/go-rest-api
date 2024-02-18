@@ -15,6 +15,7 @@ const (
 		INSERT INTO Registrations (teacher_id, student_id)
 		VALUES ($1, $2);
 	`
+	REGISTER_STUDENT_BAD_REQUEST_ERROR_MESSAGE = `Please ensure that your JSON matches the following format: { teacher: string, students: string[] }`
 )
 
 func RegisterStudentsHandler(db *sql.DB) func(*gin.Context) {
@@ -24,18 +25,21 @@ func RegisterStudentsHandler(db *sql.DB) func(*gin.Context) {
 		stmt, err := db.Prepare(INSERT_INTO_REGISTRATIONS)
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
+			return
 		}
 
 		var registration models.RegistrationRequest
 
 		if err := c.BindJSON(&registration); err != nil {
-			utils.AbortWithBadRequestError(c, "Please ensure that your JSON matches the following format: { teacher: string, students: string[] }")
+			utils.AbortWithBadRequestError(c, REGISTER_STUDENT_BAD_REQUEST_ERROR_MESSAGE)
+			return
 		}
 
 		for _, student := range registration.Students {
 			_, err = stmt.Exec(registration.Teacher, student)
 			if err != nil {
 				utils.AbortWithInternalServerError(c, err.Error())
+				return
 			}
 		}
 

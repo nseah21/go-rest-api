@@ -20,6 +20,7 @@ const (
 		GROUP BY student_id
 		HAVING COUNT(teacher_id) = $2;
 	`
+	GET_COMMON_STUDENTS_BAD_REQUEST_ERROR_MESSAGE = `Please specify the parameters using the key 'teacher'`
 )
 
 func GetCommonStudentsHandler(db *sql.DB) func(*gin.Context) {
@@ -28,6 +29,7 @@ func GetCommonStudentsHandler(db *sql.DB) func(*gin.Context) {
 
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
+			return
 		}
 
 		var students []string
@@ -37,6 +39,7 @@ func GetCommonStudentsHandler(db *sql.DB) func(*gin.Context) {
 			rows, err := stmt.Query(pq.Array(teachers), len(teachers))
 			if err != nil {
 				utils.AbortWithInternalServerError(c, err.Error())
+				return
 			}
 			defer rows.Close()
 
@@ -48,7 +51,8 @@ func GetCommonStudentsHandler(db *sql.DB) func(*gin.Context) {
 				students = append(students, student.Id)
 			}
 		} else {
-			utils.AbortWithBadRequestError(c, "Please specify the parameters using the key \"teacher\"")
+			utils.AbortWithBadRequestError(c, GET_COMMON_STUDENTS_BAD_REQUEST_ERROR_MESSAGE)
+			return
 		}
 
 		result := map[string][]string{
