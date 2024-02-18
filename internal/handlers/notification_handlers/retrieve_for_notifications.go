@@ -8,14 +8,20 @@ import (
 	"example.com/go-rest-api/internal/models"
 	"example.com/go-rest-api/internal/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 )
 
 const (
 	SELECT_NOTIFIABLE_STUDENTS = `
-		SELECT S.id 
+		( SELECT S.id 
 		FROM Students S JOIN Registrations R on S.id = R.student_id 
-		WHERE S.has_been_suspended = false and R.teacher_id = $1; 
+		WHERE S.has_been_suspended = false and R.teacher_id = $1 )
+		UNION
+		( SELECT id 
+		FROM Students 
+		WHERE has_been_suspended = false and id = ANY ($2) )
+		; 
 	`
 	INSERT_INTO_NOTIFICATIONS = `
 		INSERT INTO Notifications (sender_id, recipient_id, notification) 
@@ -48,7 +54,7 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 
 		var notifiableStudents []string
 
-		rows, err := select_stmt.Query(notification_sender)
+		rows, err := select_stmt.Query(notification_sender, pq.Array(mentionedStudents))
 		if err != nil {
 			utils.AbortWithInternalServerError(c, err.Error())
 			return
@@ -63,8 +69,6 @@ func RetrieveForNotificationsHandler(db *sql.DB) func(*gin.Context) {
 			}
 			notifiableStudents = append(notifiableStudents, student.Id)
 		}
-
-		notifiableStudents = append(notifiableStudents, mentionedStudents...)
 
 		insert_stmt, err := db.Prepare(INSERT_INTO_NOTIFICATIONS)
 		if err != nil {
