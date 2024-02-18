@@ -2,11 +2,13 @@ package server
 
 import (
 	"database/sql"
-	"example.com/go-rest-api/internal/handlers/registration_handlers"
-	"example.com/go-rest-api/internal/handlers/student_handlers"
 	"fmt"
 	"log"
 	"os"
+
+	"example.com/go-rest-api/internal/handlers/notification_handlers"
+	"example.com/go-rest-api/internal/handlers/registration_handlers"
+	"example.com/go-rest-api/internal/handlers/student_handlers"
 
 	"github.com/gin-gonic/gin"
 	"github.com/lpernett/godotenv"
@@ -22,6 +24,7 @@ func Start() {
 	router.POST("/api/register", registration_handlers.RegisterStudentsHandler(db))
 	router.GET("/api/commonstudents", student_handlers.GetCommonStudentsHandler(db))
 	router.POST("/api/suspend", student_handlers.SuspendStudentHandler(db))
+	router.POST("/api/retrievefornotifications", notification_handlers.RetrieveForNotificationsHandler(db))
 	router.Run()
 }
 
